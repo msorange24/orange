@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工安缺失巡檢系統 | Industrial Safety Inspection</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Mobile Header -->
+        <header class="mobile-header">
+            <div class="logo">
+                <i data-lucide="shield-check"></i>
+                <span>工安巡檢系統</span>
+            </div>
+            <div class="header-actions">
+                <span id="mobile-current-view">儀表板</span>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i data-lucide="shield-check"></i>
+                <span>工安巡檢系統</span>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="nav-link active" onclick="app.switchView('dashboard')">
+                    <i data-lucide="layout-dashboard" size="20"></i>
+                    <span>儀表板</span>
+                </li>
+                <li class="nav-link" onclick="app.switchView('pending')">
+                    <i data-lucide="alert-circle" size="20"></i>
+                    <span>待處理清單</span>
+                </li>
+                <li class="nav-link" onclick="app.switchView('resolved')">
+                    <i data-lucide="check-circle-2" size="20"></i>
+                    <span>已結案紀錄</span>
+                </li>
+                <li class="nav-link" onclick="app.switchView('form')">
+                    <i data-lucide="plus-circle" size="20"></i>
+                    <span>新增巡檢</span>
+                </li>
+            </ul>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="view">
+                <div class="header">
+                    <h1>工安巡檢儀表板</h1>
+                    <button class="btn-outline btn-sm" onclick="app.exportCSV('all')" style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="file-spreadsheet" size="14"></i>
+                        <span>匯出統計表 (CSV)</span>
+                    </button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>累計缺失數</h3>
+                        <div class="value" id="stat-total">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>待處理案件</h3>
+                        <div class="value" id="stat-pending">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>已結案數量</h3>
+                        <div class="value" id="stat-resolved">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>改善達成率</h3>
+                        <div class="value" id="stat-rate">0%</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div style="padding: 24px 24px 0 24px;">
+                        <h3 style="margin-bottom: 16px;">最近缺失紀錄</h3>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="recent-table">
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>項目</th>
+                                    <th>地點</th>
+                                    <th>程度</th>
+                                    <th>狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-list">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pending View -->
+            <section id="view-pending" class="view hidden">
+                <div class="header">
+                    <h1>待處理缺失清單</h1>
+                    <button class="btn-outline btn-sm" title="匯出待處理統計表" onclick="app.exportCSV('pending')" style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="file-spreadsheet" size="14"></i>
+                        <span>匯出統計表</span>
+                    </button>
+                </div>
+                <div class="filter-bar" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                    <input type="text" id="search-pending" placeholder="搜尋項目、地點..." class="search-input" style="flex: 1; min-width: 150px;">
+                </div>
+                <div class="card">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>編號</th>
+                                    <th>發現日期</th>
+                                    <th>項目名稱</th>
+                                    <th>
+                                        <select id="filter-category-pending" class="header-filter">
+                                            <option value="">類別 (全部)</option>
+                                        </select>
+                                    </th>
+                                    <th>地點</th>
+                                    <th>
+                                        <select id="filter-severity-pending" class="header-filter">
+                                            <option value="">嚴重度 (全部)</option>
+                                            <option value="高">高</option>
+                                            <option value="中">中</option>
+                                            <option value="低">低</option>
+                                        </select>
+                                    </th>
+                                    <th>改善期限</th>
+                                    <th>
+                                        <select id="filter-inspector-pending" class="header-filter">
+                                            <option value="">開單人員 (全部)</option>
+                                        </select>
+                                    </th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-pending">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resolved View -->
+            <section id="view-resolved" class="view hidden">
+                <div class="header">
+                    <h1>已結案紀錄清單</h1>
+                    <button class="btn-outline btn-sm" title="匯出已結案統計表" onclick="app.exportCSV('resolved')" style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="file-spreadsheet" size="14"></i>
+                        <span>匯出統計表</span>
+                    </button>
+                </div>
+                <div class="filter-bar" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                    <input type="text" id="search-resolved" placeholder="搜尋項目、地點..." class="search-input" style="flex: 1; min-width: 150px;">
+                </div>
+                <div class="card">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>編號</th>
+                                    <th>發現日期</th>
+                                    <th>項目名稱</th>
+                                    <th>
+                                        <select id="filter-category-resolved" class="header-filter">
+                                            <option value="">類別 (全部)</option>
+                                        </select>
+                                    </th>
+                                    <th>地點</th>
+                                    <th>
+                                        <select id="filter-severity-resolved" class="header-filter">
+                                            <option value="">嚴重度 (全部)</option>
+                                            <option value="高">高</option>
+                                            <option value="中">中</option>
+                                            <option value="低">低</option>
+                                        </select>
+                                    </th>
+                                    <th>改善期限</th>
+                                    <th>
+                                        <select id="filter-inspector-resolved" class="header-filter">
+                                            <option value="">開單人員 (全部)</option>
+                                        </select>
+                                    </th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-resolved">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Form View -->
+            <section id="view-form" class="view hidden">
+                <div class="header">
+                    <h1>新增工安巡檢紀錄</h1>
+                    <button class="btn-outline" onclick="app.switchView('pending')">取消並返回</button>
+                </div>
+                <div class="card" style="max-width: 900px; margin: 0 auto;">
+                    <form id="inspection-form" style="padding: 40px;">
+                        <!-- Section 1: Basic Information -->
+                        <div class="form-section-header">
+                            <i data-lucide="info" size="18"></i>
+                            <span>基本資訊</span>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label><i data-lucide="tag" size="14"></i> 缺失項目名稱 *</label>
+                                <input type="text" name="title" required placeholder="例如：配電盤未遮蔽">
+                            </div>
+                            <div class="form-group">
+                                <label><i data-lucide="user" size="14"></i> 開單人員 *</label>
+                                <input type="text" name="inspector" required placeholder="例如：張大明">
+                            </div>
+                            <div class="form-group">
+                                <label><i data-lucide="layers" size="14"></i> 缺失類別</label>
+                                <select name="category">
+                                    <option value="化學品管理">化學品管理</option>
+                                    <option value="個人防護具">個人防護具</option>
+                                    <option value="消防安全">消防安全</option>
+                                    <option value="高空作業">高空作業</option>
+                                    <option value="機械安全">機械安全</option>
+                                    <option value="環境衛生">環境衛生</option>
+                                    <option value="電氣安全">電氣安全</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label><i data-lucide="calendar" size="14"></i> 發現日期</label>
+                                <div class="date-trigger" onclick="this.querySelector('input').showPicker()">
+                                    <span class="date-text">請點擊選擇日期...</span>
+                                    <i data-lucide="chevron-down" size="16"></i>
+                                    <input type="date" name="date" required style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label><i data-lucide="map-pin" size="14"></i> 發現地點</label>
+                                <input type="text" name="location" required placeholder="例如：B棟 3F 生產線">
+                            </div>
+                            <div class="form-group">
+                                <label><i data-lucide="alert-triangle" size="14"></i> 嚴重等級</label>
+                                <select name="severity">
+                                    <option value="高">高 (需立即停工改善)</option>
+                                    <option value="中" selected>中 (限期改善)</option>
+                                    <option value="低">低 (建議改善)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label><i data-lucide="clock" size="14"></i> 改善期限</label>
+                                <div class="date-trigger" onclick="this.querySelector('input').showPicker()">
+                                    <span class="date-text">請點擊選擇日期...</span>
+                                    <i data-lucide="chevron-down" size="16"></i>
+                                    <input type="date" name="deadline" style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Details -->
+                        <div class="form-section-header" style="margin-top: 32px;">
+                            <i data-lucide="file-text" size="18"></i>
+                            <span>缺失詳細內容</span>
+                        </div>
+                        <div class="form-group full-width">
+                            <label><i data-lucide="align-left" size="14"></i> 缺失詳細描述 (建議填寫具體情境)</label>
+                            <textarea name="description" rows="4" placeholder="請詳細說明現場缺失狀況、受影響範圍等..."></textarea>
+                        </div>
+                        <div class="form-group full-width" style="margin-top: 16px;">
+                            <label><i data-lucide="image" size="14"></i> 現場相片上傳</label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="photo-input" accept="image/*">
+                                <div id="preview-defect" class="image-preview hidden"></div>
+                                <div class="file-upload-hint">支援 JPG, PNG 格式，檔案大小建議不超過 5MB</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 40px; display: flex; gap: 16px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 32px;">
+                            <button type="reset" class="btn-outline" style="min-width: 120px;">清除重填</button>
+                            <button type="submit" class="btn-primary" style="min-width: 160px; font-size: 1rem;">儲存巡檢紀錄</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Resolve Modal -->
+    <div id="resolve-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>缺失結案申請</h2>
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">請填寫改善後的狀況以完成結案</p>
+            </div>
+            <form id="resolve-form">
+                <input type="hidden" id="resolve-id">
+                <div class="form-group">
+                    <label>改善說明 *</label>
+                    <textarea id="resolve-note" rows="4" required placeholder="請說明已執行的改善措施..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>改善人員 *</label>
+                    <input type="text" id="resolve-executor" required placeholder="例如：張小明">
+                </div>
+                <div class="form-group">
+                    <label>改善後照片 *</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="resolve-photo-input" accept="image/*" required>
+                        <div id="preview-resolve" class="image-preview hidden"></div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">確認結案</button>
+                    <button type="button" class="btn-outline" onclick="app.closeResolveModal()">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Details Modal (Reusable for viewing resolved details) -->
+    <div id="details-modal" class="modal-overlay hidden">
+        <div class="modal-card wide">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 id="details-title" style="margin: 0;">巡檢紀錄詳情</h2>
+                <button onclick="app.closeDetailsModal()" style="background: none; border: none; cursor: pointer; color: var(--text-secondary);"><i data-lucide="x" size="24"></i></button>
+            </div>
+            <div id="details-content" style="line-height: 1.6; font-size: 0.9375rem;">
+                <!-- Content injected via JS -->
+            </div>
+            <div style="margin-top: 24px; display: flex; gap: 12px;">
+                <button type="button" class="btn-outline" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;" id="btn-export-pdf">
+                    <i data-lucide="file-text" size="18"></i> 匯出報告
+                </button>
+                <button type="button" class="btn-primary" style="flex: 1;" onclick="app.closeDetailsModal()">關閉視窗</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
