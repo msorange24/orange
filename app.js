@@ -344,6 +344,8 @@ const app = {
         const content = document.getElementById('details-content');
         if (content) {
             content.innerHTML = `
+                <p><strong>案件編號：</strong>${item.id}</p>
+                <p><strong>發現日期：</strong>${this.formatDate(item.date)}</p>
                 <p><strong>項目名稱：</strong>${item.title}</p>
                 <p><strong>類別：</strong>${item.category}</p>
                 <p><strong>地點：</strong>${item.location}</p>
