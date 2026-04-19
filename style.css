@@ -451,6 +451,17 @@ textarea {
     min-height: 120px;
 }
 
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+}
+
+.form-actions button {
+    min-width: 150px;
+    font-size: 1rem;
+}
+
 /* Modals */
 .modal-overlay {
     position: fixed;
@@ -675,6 +686,16 @@ textarea {
 
     .form-section-header {
         font-size: 1rem;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+
+    .form-actions button {
+        width: 100%;
+        min-width: 0;
     }
 
     /* Modals */
